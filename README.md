@@ -1,5 +1,7 @@
 # `Ipython Run` 使用文档
 
+注：后来开发过一个 [Send To Terminal](https://marketplace.visualstudio.com/items?itemName=ChenJun.vscode-send2terminal) ，个人认为将更加适用多场景。
+
 ---
 ## 使用示例
 
@@ -41,6 +43,15 @@
 ## 更新日志Changelogs
 
 ---
+
+### v0.6.2 (2021-02-08)
+
+**修复BUG**
+> - [x] 修复更新 vscode `January 2021 (version 1.53)` 后无法正常使用的BUG。
+
+**功能优化**
+> - [x] 选中状态下，不自动跳转下一行。
+
 
 ### v0.6.1 (2020-08-30)
 
@@ -141,6 +152,15 @@ Limit:
 ---
 
 ## Changelogs
+
+---
+### v0.6.2 (2021-02-08)
+
+**Fix BUG**
+> - [x] Fix the bug that vscode cannot be used normally after updating vscode `January 2021 (version 1.53)`.
+
+**Function optimization**
+> - [x] When selected, do not automatically jump to the next line.
 
 ---
 

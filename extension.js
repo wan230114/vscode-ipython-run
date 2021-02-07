@@ -15,7 +15,7 @@ function createPythonTerminal() {
     textQueue = [];
     waitsQueue = [];
     pythonTerminal = vscode.window.createTerminal(pythonTerminalName);
-    sendQueuedText('ipython', 1000);
+    pythonTerminal.sendText('ipython');
 }
 
 
@@ -28,20 +28,20 @@ function removePythonTerminal() {
 
 function updateFilename(filename, runInCurrentDirectory) {
     currentFilename = filename;
-    sendQueuedText(`__file__ = r'${filename}'`)
-    sendQueuedText('import sys')
-    sendQueuedText('import os')
+    pythonTerminal.sendText(`__file__ = r'${filename}'`)
+    pythonTerminal.sendText('import sys')
+    pythonTerminal.sendText('import os')
     if (runInCurrentDirectory) {
-        sendQueuedText(`os.chdir(os.path.dirname(r'${filename}'))`)
+        pythonTerminal.sendText(`os.chdir(os.path.dirname(r'${filename}'))`)
     }
-    sendQueuedText('sys.path.append(os.path.dirname(__file__))', 2000)
-    sendQueuedText('\n')
+    pythonTerminal.sendText('sys.path.append(os.path.dirname(__file__))')
+    pythonTerminal.sendText('\n')
 }
 
-function sendQueuedText(text, waitTime = 50) {
-    textQueue.push(text);
-    waitsQueue.push(waitTime);
-}
+// function pythonTerminal.sendText(text, waitTime = 50) {
+//     textQueue.push(text);
+//     waitsQueue.push(waitTime);
+// }
 
 function judgeCMD(CMD) {
     // 多行判断缩进, 并且末尾是否存在/n，有缩进且无/n返回true
@@ -64,35 +64,35 @@ function judgeCMD(CMD) {
 
 
 // let runtimes = 0
-function queueLoop() {
-    // runtimes += 1
-    // vscode.window.showInformationMessage(runtimes+'|' + textQueue.length + 'textQueue:' + textQueue);
-    // if (pythonTerminal !== null) {
-    //     vscode.window.showInformationMessage('pythonTerminal._queuedRequests:' + pythonTerminal._queuedRequests.length);
-    // }
-    if (textQueue.length > 0 && pythonTerminal !== null && pythonTerminal._queuedRequests.length === 0) {
-        isrunning = true;
-        const text = textQueue.shift();
-        const waitTime = waitsQueue.shift();
-        pythonTerminal.sendText(text);
-        setTimeout(queueLoop, waitTime);
-    } else {
-        if (isrunning) {
-            if (textQueue.length === 0 && pythonTerminal !== null && pythonTerminal._queuedRequests.length === 0) {
-                // vscode.window.showInformationMessage('满足条件, 发送换行符中');
-                // pythonTerminal.sendText('\n');
-                // vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
-                isrunning = false;
-            };
-        } else {
-            noruntimes -= 1;
-            if (noruntimes < 0) {
-                return
-            };
-        };
-        setTimeout(queueLoop, 200);
-    }
-}
+// function queueLoop() {
+//     // runtimes += 1
+//     // vscode.window.showInformationMessage(runtimes+'|' + textQueue.length + 'textQueue:' + textQueue);
+//     // if (pythonTerminal !== null) {
+//     //     vscode.window.showInformationMessage('pythonTerminal._queuedRequests:' + pythonTerminal._queuedRequests.length);
+//     // }
+//     if (textQueue.length > 0 && pythonTerminal !== null && pythonTerminal._queuedRequests.length === 0) {
+//         isrunning = true;
+//         const text = textQueue.shift();
+//         const waitTime = waitsQueue.shift();
+//         pythonTerminal.sendText(text);
+//         setTimeout(queueLoop, waitTime);
+//     } else {
+//         if (isrunning) {
+//             if (textQueue.length === 0 && pythonTerminal !== null && pythonTerminal._queuedRequests.length === 0) {
+//                 // vscode.window.showInformationMessage('满足条件, 发送换行符中');
+//                 // pythonTerminal.sendText('\n');
+//                 // vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
+//                 isrunning = false;
+//             };
+//         } else {
+//             noruntimes -= 1;
+//             if (noruntimes < 0) {
+//                 return
+//             };
+//         };
+//         setTimeout(queueLoop, 200);
+//     }
+// }
 
 function activate(context) {
     vscode.window.onDidCloseTerminal(function (event) {
@@ -142,24 +142,24 @@ function activate(context) {
         };
         // 开始输入
         if (isSelection) {  // 选中发送模式下
-            // isAutoInputLine功能开启  //sendQueuedText(isAutoInputLine ?command:command_text, 500);
+            // isAutoInputLine功能开启  //pythonTerminal.sendText(isAutoInputLine ?command:command_text, 500);
             if (isAutoInputLine) {
-                sendQueuedText(command, 200);  // 等待200ms命令加载完毕
-                sendQueuedText('\n');
+                pythonTerminal.sendText(command);  // 等待200ms命令加载完毕
+                pythonTerminal.sendText('\n');
             } else {
-                sendQueuedText(command_text, 200);
+                pythonTerminal.sendText(command_text);
             };
             if (judgeCMD(command_text)) {
-                sendQueuedText('\n');
+                pythonTerminal.sendText('\n');
             };
         } else {  // 非选中发送模式下, 直接发送command
             const POS = (startLine > 0) ? (startLine - 1) : startLine;
             const charactersOnLine = vscode.window.activeTextEditor.document.lineAt(POS).text.length;
             const range = new vscode.Range(new vscode.Position(POS, 0), new vscode.Position(POS, charactersOnLine));
             let command_text = vscode.window.activeTextEditor.document.getText(range);
-            sendQueuedText(command_text, 300);
+            pythonTerminal.sendText(command_text);
         };
-        // sendQueuedText('\n');
+        // pythonTerminal.sendText('\n');
         pythonTerminal.show(configuration.get("focusActiveEditorGroup"));  //defalt: true
         // 进行发送信息后进行移动光标到下一行
         if (isMoveCursor) {
@@ -169,7 +169,6 @@ function activate(context) {
             };
             vscode.commands.executeCommand('cursorMove', { to: 'wrappedLineFirstNonWhitespaceCharacter' });
         }
-        queueLoop();
     });
 
     let sendFileContentsToIPython = vscode.commands.registerCommand('ipython.sendFileContentsToIPython', function () {
@@ -182,11 +181,10 @@ function activate(context) {
         if (filename !== currentFilename) {
             updateFilename(filename, configuration.get('runInCurrentDirectory'));
         }
-        sendQueuedText(`\n%load ${filename}\n`, 500);
-        sendQueuedText('\n');
-        sendQueuedText('\n');
+        pythonTerminal.sendText(`\n%load ${filename}\n`);
+        pythonTerminal.sendText('\n');
+        pythonTerminal.sendText('\n');
         pythonTerminal.show(configuration.get("focusActiveEditorGroup"));
-        queueLoop();
     });
 
     context.subscriptions.push(sendSelectedToIPython);
